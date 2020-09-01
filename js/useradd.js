@@ -1,4 +1,35 @@
 $(function(){
+
+    let userId=null;
+    // console.dir(window.location.href)
+    let params=window.location.href.queryURLParams();
+    console.log(params);
+
+    if(params.hasOwnProperty("id")){
+        userId=params.id;
+        // 根据ID获取用户的信息，实现数据的回显
+        getBaseInfo();
+
+    }
+    async function getBaseInfo(){
+       let result=await axios.get("/user/info",{
+           params:{userId}
+       })
+       if(result.code===0){
+        //    给表中塞数据，实现数据的回显
+        result=result.data;
+        $(".username").val(result.name);
+        result.sex==0?$("#man").prop('checked',true):$("#woman").prop('checked',true);
+        $(".useremail").val(result.email);
+        $(".userphone").val(result.phone);
+        $(".userdepartment").val(result.departmentId);
+        $(".userjob").val(result.jobId);
+        $(".userdesc").val(result.desc);
+        return;
+       }
+       alert("编辑不成功，可能是网络不给力....")
+       userId=null;
+    }
     // 初始化部门和职务的数据
     initDeptAndJob();
     async function initDeptAndJob(){
@@ -92,6 +123,19 @@ $(function(){
             departmentId:$(".userdepartment").val(),
             jobId:$(".userjob").val(),
             desc:$(".userdesc").val().trim()
+        }
+        // 判断是新增还是编辑
+        if(userId){
+            params.userId=userId;
+            // 编辑
+            let result=await axios.post("/user/update",params)
+            if(result.code===0){
+                alert("修改数据成功");
+                window.location.href="userlist.html"
+                return ;
+            }
+            alert("网络不给力，稍后再试~")
+            return;
         }
         // console.log(params)
         // 实现新增
